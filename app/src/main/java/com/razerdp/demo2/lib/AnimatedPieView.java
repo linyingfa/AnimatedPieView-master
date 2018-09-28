@@ -4,6 +4,7 @@ import android.annotation.TargetApi;
 import android.content.Context;
 import android.graphics.Canvas;
 import android.os.Build;
+import android.os.Looper;
 import android.support.annotation.Nullable;
 import android.util.AttributeSet;
 import android.view.MotionEvent;
@@ -43,7 +44,7 @@ public class AnimatedPieView extends View implements IPieView {
     }
 
     private void initView(Context context, AttributeSet attrs) {
-        setLayerType(View.LAYER_TYPE_SOFTWARE, null);
+        // etLayerType(View.LAYER_TYPE_SOFTWARE, null);
         mPieManager = new PieManager(this);
         mPieChartRender = new PieChartRender(this);
     }
@@ -60,7 +61,6 @@ public class AnimatedPieView extends View implements IPieView {
         int result = defaultSize;
         int mode = MeasureSpec.getMode(measureSpec);
         int size = MeasureSpec.getSize(measureSpec);
-
         switch (mode) {
             case MeasureSpec.UNSPECIFIED:
             case MeasureSpec.AT_MOST://
@@ -136,6 +136,14 @@ public class AnimatedPieView extends View implements IPieView {
 
     @Override
     public void onCallInvalidate() {
+        if (isMainThread()) {//主线程
+            invalidate();
+        } else {
+            postInvalidate();
+        }
+    }
 
+    boolean isMainThread() {
+        return Looper.getMainLooper().getThread() == Thread.currentThread();
     }
 }

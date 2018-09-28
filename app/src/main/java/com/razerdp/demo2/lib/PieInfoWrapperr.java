@@ -1,11 +1,13 @@
 package com.razerdp.demo2.lib;
 
 import android.graphics.Bitmap;
+import android.graphics.Matrix;
 import android.graphics.Paint;
 import android.graphics.Path;
 import android.text.TextUtils;
 
 
+import com.razerdp.widget.animatedpieview.data.*;
 import com.razerdp.widget.animatedpieview.utils.DegreeUtil;
 import com.razerdp.widget.animatedpieview.utils.PLog;
 
@@ -37,6 +39,10 @@ final class PieInfoWrapperr implements Serializable {
     public float toAngle;
     public boolean autoDesc;
     public String desc;
+
+    //============= 节点 =============
+    public PieInfoWrapperr preWrapper;
+    public PieInfoWrapperr nextWrapper;
     //=============================================================generate id
     private static final AtomicInteger sNextGeneratedId = new AtomicInteger(1);
 
@@ -116,6 +122,91 @@ final class PieInfoWrapperr implements Serializable {
         return result;
     }
 
+    public float getMiddleAngle() {
+        return fromAngle + sweepAngle / 2;
+    }
+
+    public PieOption getPieOption() {
+        return mPieInfo.getPieOpeion();
+    }
+
+
+    public Bitmap getIcon(int textWidth, int textHeight) {
+        if (icon != null) return icon;
+        PieOption option = mPieInfo.getPieOpeion();
+        if (option == null || option.getLabelIcon() == null || option.getLabelIcon().isRecycled())
+            return null;
+
+        boolean disableAutoScaleWithText = option.getIconWidth() > 0
+                || option.getIconHeight() > 0
+                || option.getIconScaledWidth() > 0
+                || option.getIconScaledHeight() > 0
+                || TextUtils.isEmpty(desc);
+
+        Bitmap mIcon = option.getLabelIcon();
+        final int iconWidth = mIcon.getWidth();
+        final int iconHeight = mIcon.getHeight();
+
+        if (disableAutoScaleWithText) {
+            Matrix matrix = null;
+            float sX = 1.0f;
+            float sY = 1.0f;
+
+            //优先取固定数值的，有需要的时候才缩放，。
+            if (option.getIconWidth() > 0 || option.getIconHeight() > 0) {
+                matrix = new Matrix();
+                sX = (option.getIconWidth() <= 0 ? option.getIconHeight() : option.getIconWidth()) / iconWidth;
+                sY = (option.getIconHeight() <= 0 ? option.getIconWidth() : option.getIconHeight()) / iconHeight;
+            } else if (option.getIconScaledWidth() > 0 || option.getIconScaledHeight() > 0) {
+                matrix = new Matrix();
+                sX = option.getIconScaledWidth() <= 0 ? option.getIconScaledHeight() : option.getIconScaledWidth();
+                sY = option.getIconScaledHeight() <= 0 ? option.getIconScaledWidth() : option.getIconScaledHeight();
+            }
+            if (matrix != null) {
+                matrix.postScale(sX, sY);
+                icon = Bitmap.createBitmap(mIcon, 0, 0, iconWidth, iconHeight, matrix, true);
+            } else {
+                icon = mIcon;
+            }
+        } else {
+            if (iconWidth > textWidth || iconHeight > textHeight) {
+                Matrix matrix = new Matrix();
+                float sX = 1.0f;
+                float sY = 1.0f;
+                if (iconWidth > textWidth) {
+                    sX = (float) textWidth / iconWidth;
+                }
+                if (iconHeight > textHeight) {
+                    sY = (float) textHeight / iconHeight;
+                }
+                float scale = Math.min(sX, sY);
+                matrix.postScale(scale, scale);
+                icon = Bitmap.createBitmap(mIcon, 0, 0, iconWidth, iconHeight, matrix, true);
+            }
+        }
+        return icon;
+    }
+
+    public float calculateDegree(float lastPieDegree, double sum, AnimatedPieViewConfig config) {
+        fromAngle = lastPieDegree;
+        sweepAngle = (float) (360f * (Math.abs(mPieInfo.getValue()) / sum));
+        toAngle = fromAngle + sweepAngle;
+        if (autoDesc) {
+            //自动填充描述auto
+            desc = String.format(config.autoDescStringFormat,
+                    com.razerdp.widget.animatedpieview.AnimatedPieViewConfig.sFormateRate.format((mPieInfo.getValue() / sum) * 100));
+            if (mPieInfo instanceof SimplePieInfo) {
+                ((SimplePieInfo) mPieInfo).setDesc(desc);
+            }
+        } else {
+            desc = mPieInfo.getDesc();
+        }
+        PLog.d("【calculate】 " + "{ \n" + "id = " + id + "\nfromAngle = " + fromAngle + "\nsweepAngle = " + sweepAngle + "\ntoAngle = " + toAngle + "\n desc = " + desc + "\n  }");
+        return toAngle;
+    }
+
+
+
 
     @Override
     public boolean equals(Object obj) {
@@ -126,6 +217,8 @@ final class PieInfoWrapperr implements Serializable {
             return obj == this || TextUtils.equals(from.getId(), id);
         }
     }
+
+
 
     @Override
     public String toString() {

@@ -2,7 +2,7 @@ package com.razerdp.demo2.lib;
 
 import android.support.annotation.NonNull;
 
-import com.razerdp.widget.animatedpieview.data.IPieInfo;
+
 
 /**
  * Created by Administrator on 2018/9/28.

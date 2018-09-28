@@ -3,8 +3,10 @@ package com.razerdp.demo2.lib;
 import android.animation.ValueAnimator;
 import android.graphics.Paint;
 import android.graphics.RectF;
+import android.view.MotionEvent;
 import android.view.animation.DecelerateInterpolator;
 
+import com.razerdp.widget.animatedpieview.render.*;
 import com.razerdp.widget.animatedpieview.utils.PLog;
 
 import java.util.List;
@@ -16,40 +18,44 @@ import java.util.List;
 public class TouchHelper {
 
     //因为判断点击时是判断内圆和外圆半径，可能很苛刻，所以这里可以考虑增加点击范围
-    private int expandClickRange;
-    private float centerX;
-    private float centerY;
-    private RectF touchBounds;
-    private PieInfoWrapperr floatingWrapper;
-    private ValueAnimator floatUpAnim;
-    private float floatUpTime;
-    private PieInfoWrapperr lastFloatWrapper;
-    private ValueAnimator floatDownAnim;
-    private float floatDownTime;
-    private float touchX = -1;
-    private float touchY = -1;
-    private Paint mTouchPaint;
-    private boolean sameClick;
-    private PieInfoWrapperr lastTouchWrapper;
-    private PieManager mPieManager;
-    private AnimatedPieViewConfig mConfig;
-    private PieChartRender pieChartRender;
-    private List<PieInfoWrapperr> mDataWrappers;
+    public int expandClickRange;
+    public float centerX;
+    public float centerY;
+    public RectF touchBounds;
+    public PieInfoWrapperr floatingWrapper;
+    public ValueAnimator floatUpAnim;
+    public float floatUpTime;
+    public PieInfoWrapperr lastFloatWrapper;
+    public ValueAnimator floatDownAnim;
+    public float floatDownTime;
+    public float touchX = -1;
+    public float touchY = -1;
+    public Paint mTouchPaint;
+    public boolean sameClick;
+    public PieInfoWrapperr lastTouchWrapper;
+    public PieManager mPieManager;
+    public AnimatedPieViewConfig mConfig;
+    public PieChartRender pieChartRender;
+    public List<PieInfoWrapperr> mDataWrappers;
+
+
+    public void setmConfig(AnimatedPieViewConfig mConfig) {
+        this.mConfig = mConfig;
+    }
 
     public void setmDataWrappers(List<PieInfoWrapperr> mDataWrappers) {
         this.mDataWrappers = mDataWrappers;
     }
 
-    TouchHelper(PieManager mPieManager, AnimatedPieViewConfig mConfig,
-                PieChartRender pieChartRender) {
-        this(25, mPieManager, mConfig, pieChartRender);
+
+    TouchHelper(PieManager mPieManager, PieChartRender pieChartRender) {
+        this(25, mPieManager, pieChartRender);
     }
 
     TouchHelper(int expandClickRange, PieManager mPieManager,
-                AnimatedPieViewConfig mConfig, PieChartRender pieChartRender) {
+                PieChartRender pieChartRender) {
         this.expandClickRange = expandClickRange;
         this.mPieManager = mPieManager;
-        this.mConfig = mConfig;
         this.pieChartRender = pieChartRender;
         touchBounds = new RectF();
     }
@@ -98,7 +104,7 @@ public class TouchHelper {
         });
     }
 
-    private void setCenter() {
+    public void setCenter() {
         centerX = mPieManager.getDrawWidth() / 2;
         centerY = mPieManager.getDrawHeight() / 2;
     }
@@ -114,7 +120,7 @@ public class TouchHelper {
         return mTouchPaint;
     }
 
-    PieInfoWrapperr pointToPieInfoWrapper(float x, float y) {
+    public PieInfoWrapperr pointToPieInfoWrapper(float x, float y) {
         final boolean isStrokeMode = mConfig.strokeMode;
         final float strokeWidth = mConfig.strokeWidth;
         //外圆半径
@@ -148,4 +154,64 @@ public class TouchHelper {
         }
         return null;
     }
+
+    public void setTouchBounds(float timeSet) {
+        final float scaleSizeInTouch = !mConfig.strokeMode ? mConfig.floatExpandSize : 0;
+        touchBounds.set(pieChartRender.pieBounds.left - scaleSizeInTouch * timeSet,
+                pieChartRender.pieBounds.top - scaleSizeInTouch * timeSet,
+                pieChartRender.pieBounds.right + scaleSizeInTouch * timeSet,
+                pieChartRender.pieBounds.bottom + scaleSizeInTouch * timeSet);
+    }
+
+    public boolean handleTouch(MotionEvent event) {
+        if (mConfig == null || !mConfig.canTouch || pieChartRender.isInAnimating) return false;
+        switch (event.getAction()) {
+            case MotionEvent.ACTION_DOWN:
+                touchX = event.getX();
+                touchY = event.getY();
+                return true;
+            case MotionEvent.ACTION_UP:
+                PieInfoWrapperr touchWrapper = pointToPieInfoWrapper(touchX, touchY);
+                if (touchWrapper == null) return false;
+                handleUp(touchWrapper);
+
+                return true;
+        }
+
+        return false;
+    }
+
+    public void handleUp(PieInfoWrapperr touchWrapper) {
+        setDrawMode(DrawMode.TOUCH);
+        if (touchWrapper.equals(floatingWrapper)) {
+            //如果点的是当前正在浮起的wrapper，则移到上一个，当前的置空
+            lastFloatWrapper = touchWrapper;
+            floatingWrapper = null;
+            sameClick = true;
+        } else {
+            lastFloatWrapper = floatingWrapper;
+            floatingWrapper = touchWrapper;
+            sameClick = false;
+        }
+
+        if (mConfig.animTouch) {
+            floatUpAnim.start();
+            floatDownAnim.start();
+        } else {
+            floatUpTime = 1;
+            floatDownTime = 1;
+            pieChartRender.callInvalidate();
+        }
+
+        if (mConfig.mSelectListener != null) {
+            mConfig.mSelectListener.onSelectPie(touchWrapper.mPieInfo, touchWrapper.equals(floatingWrapper));
+        }
+    }
+
+    private void setDrawMode(DrawMode drawMode) {
+        if (drawMode == DrawMode.TOUCH && pieChartRender.isInAnimating)
+            return;
+        pieChartRender.mDrawMode = drawMode;
+    }
+
 }
