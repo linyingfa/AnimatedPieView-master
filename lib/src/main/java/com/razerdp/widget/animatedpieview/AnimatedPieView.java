@@ -297,8 +297,7 @@ public class AnimatedPieView extends View implements IPieView {
     @Override
     protected void onSizeChanged(int w, int h, int oldw, int oldh) {
         super.onSizeChanged(w, h, oldw, oldh);
-        mPieManager.setChartContentRect(getWidth(), getHeight(), getPaddingLeft(), getPaddingTop(),
-                getPaddingRight(), getPaddingBottom());
+        mPieManager.setChartContentRect(getWidth(), getHeight(), getPaddingLeft(), getPaddingTop(), getPaddingRight(), getPaddingBottom());
     }
 
     public AnimatedPieView applyConfig(AnimatedPieViewConfig config) {

@@ -4,10 +4,9 @@ import android.os.Bundle;
 import android.support.annotation.Nullable;
 import android.support.v7.app.AppCompatActivity;
 import android.util.Log;
-import android.widget.TextView;
 
 import com.razerdp.animatedpieview.R;
-import com.razerdp.demo2.view.AnimatedPieView;
+import com.razerdp.demo2.view.TestAnimatedPieView;
 import com.razerdp.widget.animatedpieview.utils.UIUtil;
 
 /**
@@ -18,7 +17,7 @@ public class Demo2 extends AppCompatActivity {
 
     public final String ATG = getClass().getSimpleName();
 
-    AnimatedPieView animatedPieView;
+    TestAnimatedPieView animatedPieView;
 
     @Override
     protected void onCreate(@Nullable Bundle savedInstanceState) {

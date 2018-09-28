@@ -1,4 +1,5 @@
-package com.razerdp.widget.animatedpieview.manager;
+package com.razerdp.demo2.lib;
+
 
 import android.graphics.Paint;
 import android.graphics.Rect;
@@ -6,8 +7,6 @@ import android.graphics.RectF;
 import android.text.TextPaint;
 import android.text.TextUtils;
 
-import com.razerdp.widget.animatedpieview.IPieView;
-import com.razerdp.widget.animatedpieview.render.BaseRender;
 import com.razerdp.widget.animatedpieview.utils.PLog;
 import com.razerdp.widget.animatedpieview.utils.Util;
 
@@ -16,20 +15,16 @@ import java.util.List;
 import java.util.Locale;
 
 /**
- * Created by 大灯泡 on 2018/2/1.
- * <p>
- * <h3>CN:</h3>pieview的管理类，主要负责内容区域的管理
- * <p>
- * <h3>EN:</h3>manager the content area and some tool methods
+ * Created by Administrator on 2018/9/28.
  */
+
 public class PieManager {
 
-    private IPieView pieView;
-    private List<BaseRender> mRenders;
+    IPieView pieView;
+    List<BaseRender> mRenders;
     private RectF drawBounds;
     private Paint textMeasurePaint;
     private Rect textBounds;
-
 
     public PieManager(IPieView pieView) {
         this.pieView = pieView;
@@ -39,7 +34,6 @@ public class PieManager {
         textMeasurePaint = new TextPaint();
         textMeasurePaint.setStyle(Paint.Style.FILL);
     }
-
 
     public void setChartContentRect(int width, int height, int paddingLeft, int paddingTop, int paddingRight, int paddingBottom) {
         PLog.i(String.format(Locale.getDefault(),
@@ -83,17 +77,18 @@ public class PieManager {
         return textBounds;
     }
 
-
     //-----------------------------------------render observer-----------------------------------------
     public void registerRender(BaseRender render) {
-        if (render == null) return;
-        if (!mRenders.contains(render)) {
+        if (render == null) {
+            return;
+        }
+        if (!mRenders.contains(render)) {//TODO 没有添加过的就添加进去，添加注册
             mRenders.add(render);
         }
     }
 
     public void unRegisterRender(BaseRender render) {
         if (Util.isListEmpty(mRenders) || !mRenders.contains(render)) return;
-        mRenders.remove(render);
+        mRenders.remove(render); ///TODO 删除注册
     }
 }

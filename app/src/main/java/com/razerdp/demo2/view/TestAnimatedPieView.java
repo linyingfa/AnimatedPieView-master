@@ -16,24 +16,24 @@ import com.razerdp.widget.animatedpieview.utils.UIUtil;
  * Created by xiaolin on 2018/9/27.
  */
 
-public class AnimatedPieView extends View {
+public class TestAnimatedPieView extends View {
 
     public final String ATG = getClass().getSimpleName();
     private Paint paint1, paint2, paint3, paint4;
     private RectF mDrawRectf = new RectF();
     private Context mContext;
 
-    public AnimatedPieView(Context context) {
+    public TestAnimatedPieView(Context context) {
         super(context);
         init(context);
     }
 
-    public AnimatedPieView(Context context, @Nullable AttributeSet attrs) {
+    public TestAnimatedPieView(Context context, @Nullable AttributeSet attrs) {
         super(context, attrs);
         init(context);
     }
 
-    public AnimatedPieView(Context context, @Nullable AttributeSet attrs, int defStyleAttr) {
+    public TestAnimatedPieView(Context context, @Nullable AttributeSet attrs, int defStyleAttr) {
         super(context, attrs, defStyleAttr);
         init(context);
     }

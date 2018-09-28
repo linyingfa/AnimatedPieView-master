@@ -43,10 +43,8 @@ public class PieChartRender extends BaseRender implements ITouchRender {
         BOTTOM_LEFT(0, 1),
         CENTER_RIGHT(1, -1),
         CENTER_LEFT(0, -1);
-
         int xDirection;//0:left 1:right
         int yDirection;//-1:center 0:top 1:bottom
-
         LineDirection(int xDirection, int yDirection) {
             this.xDirection = xDirection;
             this.yDirection = yDirection;
@@ -65,7 +63,7 @@ public class PieChartRender extends BaseRender implements ITouchRender {
     private int maxDescTextLength;
     private volatile boolean isInAnimating;
     //-----------------------------------------anim area-----------------------------------------
-    private PieInfoWrapper mDrawingPie;
+    private PieInfoWrapper mDrawingPie;//包裹
     private float animAngle;
     //-----------------------------------------other-----------------------------------------
     private TouchHelper mTouchHelper;
@@ -195,18 +193,20 @@ public class PieChartRender extends BaseRender implements ITouchRender {
         measurePieRadius(width, height);
         switch (mDrawMode) {
             case DRAW:
-                renderDraw(canvas);
+                renderDraw(canvas);//绘制
                 break;
             case TOUCH:
-                renderTouch(canvas);
+                renderTouch(canvas);//触摸
                 break;
         }
     }
 
     private void renderDraw(Canvas canvas) {
         if (mConfig.isAnimatePie()) {
+            //isInAnimating 动画中。  animHasStart 是否开始动画
             if (mRenderAnimation != null && !isInAnimating && !animHasStart) {
                 animHasStart = true;
+                //TODO 不断更新绘制VIEW
                 mIPieView.getPieView().startAnimation(mRenderAnimation);
                 return;
             }
@@ -219,10 +219,11 @@ public class PieChartRender extends BaseRender implements ITouchRender {
     private void renderTouch(Canvas canvas) {
         drawCachedPie(canvas, mTouchHelper.sameClick ? mTouchHelper.lastFloatWrapper : mTouchHelper.floatingWrapper);
         renderTouchDraw(canvas, mTouchHelper.lastFloatWrapper, mTouchHelper.floatDownTime);
-        PLog.i("lastFloatWrapper id = " + (mTouchHelper.lastFloatWrapper == null ? "null" : mTouchHelper.lastFloatWrapper.getId()) + "  downTime = " + mTouchHelper.floatDownTime);
+        PLog.i("lastFloatWrapper id = " + (mTouchHelper.lastFloatWrapper == null ? "null"
+                : mTouchHelper.lastFloatWrapper.getId()) + "  downTime = " + mTouchHelper.floatDownTime);
         renderTouchDraw(canvas, mTouchHelper.floatingWrapper, mTouchHelper.floatUpTime);
-        PLog.d("floatingWrapper id = " + (mTouchHelper.floatingWrapper == null ? "null" : mTouchHelper.floatingWrapper.getId()) + "  upTime = " + mTouchHelper.floatUpTime);
-
+        PLog.d("floatingWrapper id = " + (mTouchHelper.floatingWrapper == null ? "null"
+                : mTouchHelper.floatingWrapper.getId()) + "  upTime = " + mTouchHelper.floatUpTime);
     }
 
     private void renderNormalDraw(Canvas canvas) {
@@ -237,11 +238,9 @@ public class PieChartRender extends BaseRender implements ITouchRender {
     private void renderAnimDraw(Canvas canvas) {
         if (mDrawingPie != null) {
             drawCachedPie(canvas, mDrawingPie);
-            canvas.drawArc(pieBounds,
-                    mDrawingPie.getFromAngle(),
+            canvas.drawArc(pieBounds, mDrawingPie.getFromAngle(),
                     animAngle - mDrawingPie.getFromAngle() - mConfig.getSplitAngle(),
-                    !mConfig.isStrokeMode(),
-                    mDrawingPie.getDrawPaint());
+                    !mConfig.isStrokeMode(), mDrawingPie.getDrawPaint());
             if (mConfig.isDrawText() && animAngle >= mDrawingPie.getMiddleAngle() && animAngle <= mDrawingPie.getToAngle()) {
                 drawText(canvas, mDrawingPie);
             }
@@ -273,11 +272,9 @@ public class PieChartRender extends BaseRender implements ITouchRender {
                 if (cachedDrawWrapper.equals(excluded)) {
                     continue;
                 }
-                canvas.drawArc(pieBounds,
-                        cachedDrawWrapper.getFromAngle(),
+                canvas.drawArc(pieBounds, cachedDrawWrapper.getFromAngle(),
                         cachedDrawWrapper.getSweepAngle() - mConfig.getSplitAngle(),
-                        !mConfig.isStrokeMode(),
-                        paint);
+                        !mConfig.isStrokeMode(), paint);
             }
         }
     }
@@ -337,47 +334,39 @@ public class PieChartRender extends BaseRender implements ITouchRender {
             case TOP_LEFT:
                 guideLineEndX1 = cx - guideMiddleLength * absMathCos(-45) - fixPos;
                 guideLineEndY1 = cy - guideMiddleLength * absMathCos(-45) - fixPos;
-
                 guideLineEndX2 = guideLineEndX1 - textLength;
                 break;
             case TOP_RIGHT:
                 guideLineEndX1 = cx + guideMiddleLength * absMathCos(45) + fixPos;
                 guideLineEndY1 = cy - guideMiddleLength * absMathCos(45) - fixPos;
-
                 guideLineEndX2 = guideLineEndX1 + textLength;
                 break;
             case CENTER_LEFT:
                 guideLineEndX1 = cx - guideMiddleLength - fixPos;
                 guideLineEndY1 = cy;
-
                 guideLineEndX2 = guideLineEndX1 - textLength;
                 break;
             case CENTER_RIGHT:
                 guideLineEndX1 = cx + guideMiddleLength + fixPos;
                 guideLineEndY1 = cy;
-
                 guideLineEndX2 = guideLineEndX1 + textLength;
                 break;
             case BOTTOM_LEFT:
                 guideLineEndX1 = cx - guideMiddleLength * absMathCos(-45) - fixPos;
                 guideLineEndY1 = cy + guideMiddleLength * absMathCos(-45) + fixPos;
-
                 guideLineEndX2 = guideLineEndX1 - textLength;
                 break;
             case BOTTOM_RIGHT:
                 guideLineEndX1 = cx + guideMiddleLength * absMathCos(45) + fixPos;
                 guideLineEndY1 = cy + guideMiddleLength * absMathCos(45) + fixPos;
-
                 guideLineEndX2 = guideLineEndX1 + textLength;
                 break;
 
         }
         guideLineEndY2 = guideLineEndY1;
-
         paint.setStyle(Paint.Style.STROKE);
         paint.setStrokeWidth(mConfig.getGuideLineWidth());
         paint.setStrokeJoin(Paint.Join.ROUND);
-
         Path path = wrapper.getLinePath();
         Path measurePathDst = wrapper.getLinePathMeasure();
         path.moveTo(cx, cy);
@@ -388,14 +377,11 @@ public class PieChartRender extends BaseRender implements ITouchRender {
         float progress = angleToProgress(animAngle, wrapper);
         mPathMeasure.getSegment(0, progress * mPathMeasure.getLength(), measurePathDst, true);
         canvas.drawPath(measurePathDst, paint);
-
         paint.setStyle(Paint.Style.FILL);
         paint.setTextSize(mConfig.getTextSize());
         paint.setAlpha((int) (255 * progress));
-
         float textStartX = calculateTextStartX(guideLineEndX1, guideLineEndX2, direction, textBoundsWidth);
         float textStartY = calculateTextStartY(guideLineEndY1, guideLineEndY2, direction, textBoundsHeight);
-
         if (icon != null) {
             textStartX = fitTextStartXWithLabel(textStartX, textBoundsWidth, labelWidth, direction, wrapper.getPieOption());
             float iconLeft;
@@ -586,9 +572,7 @@ public class PieChartRender extends BaseRender implements ITouchRender {
                 paint.setAlpha(255);
                 break;
         }
-
     }
-
 
     @Override
     public void onDestroy() {
@@ -641,6 +625,7 @@ public class PieChartRender extends BaseRender implements ITouchRender {
         }
         mDrawingPie = infoWrapper;
         animAngle = degree;
+        //TODO 通过动画，不断更新绘制
         callInvalidate();
     }
 
@@ -649,6 +634,7 @@ public class PieChartRender extends BaseRender implements ITouchRender {
         mDrawMode = drawMode;
     }
 
+    //测量半径
     private void measurePieRadius(float width, float height) {
         if (pieRadius > 0) {
             pieBounds.set(-pieRadius, -pieRadius, pieRadius, pieRadius);
