@@ -825,12 +825,7 @@ public class PieChartRender extends BaseRender implements ITouchRender {
 
         /**
          * 在点击触发的时候，我们先判断点击的位置是否在甜甜圈（或者饼图）内，判断的方法也很简单，就是初中的技巧计算两点之间的直线距离。
-         * <p>
          * 我们获取触摸点的x,y，计算其到中心的距离，假如当前是甜甜圈模式（环形饼图），则需要甜甜圈内径≤距离≤甜甜圈外径则判定在甜甜圈内。
-         *
-         * @param x
-         * @param y
-         * @return
          */
         PieInfoWrapper pointToPieInfoWrapper(float x, float y) {
             final boolean isStrokeMode = mConfig.isStrokeMode();
@@ -848,6 +843,8 @@ public class PieChartRender extends BaseRender implements ITouchRender {
             return findWrapper(x, y);
         }
 
+
+        //根据角度寻找每一段甜甜圈里匹配的角度进行查询，直到找到为止。
         PieInfoWrapper findWrapper(float x, float y) {
             //得到角度
             double touchAngle = Math.toDegrees(Math.atan2(y - centerY, x - centerX));
