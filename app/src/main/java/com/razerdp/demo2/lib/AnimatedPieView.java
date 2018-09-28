@@ -44,7 +44,7 @@ public class AnimatedPieView extends View implements IPieView {
     }
 
     private void initView(Context context, AttributeSet attrs) {
-        // etLayerType(View.LAYER_TYPE_SOFTWARE, null);
+        setLayerType(View.LAYER_TYPE_SOFTWARE, null);
         mPieManager = new PieManager(this);
         mPieChartRender = new PieChartRender(this);
     }
