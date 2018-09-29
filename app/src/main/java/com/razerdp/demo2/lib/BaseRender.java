@@ -21,7 +21,10 @@ public abstract class BaseRender {
     }
 
     public void draw(Canvas canvas) {
-        if (!isPrepared) return;
+        //TODO 默认是false，如果没有调用start，准备好一些数据，就不会进行绘制
+        if (!isPrepared) {
+            return;
+        }
         onDraw(canvas);
     }
 
